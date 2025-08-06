@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 단어 타이핑 벽돌 깨기 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        /* 시작화면 스타일 */
+        .start-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .start-logo {
+            margin-bottom: 20px;
+        }
+
+        .start-logo img {
+            max-width: 300px;
+            height: auto;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .start-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8); }
+        }
+
+        .start-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .game-description {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .game-description h3 {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .rules-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules-list li {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4ecdc4;
+            font-size: 1.1rem;
+        }
+
+        .controls-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+
+        .controls-info h3 {
+            color: #4ecdc4;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-key {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .start-button {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: buttonPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            animation: none;
+        }
+
+        /* 게임화면 스타일 */
+        .game-container {
+            display: none;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .brick {
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .brick.destroying {
+            animation: destroy 0.5s ease-out forwards;
+        }
+
+        @keyframes destroy {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2) rotate(180deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .input-area {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .word-input {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            outline: none;
+        }
+
+        .word-input:focus {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .controls {
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-over {
+            display: none;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .game-over h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .combo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-to-menu {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-menu:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .start-logo img {
+                max-width: 250px;
+            }
+            
+            .start-title {
+                font-size: 1.8rem;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .word-input {
+                width: 250px;
+                font-size: 1rem;
+            }
+            
+            .game-area {
+                height: 300px;
+            }
+            
+            .brick {
+                width: 100px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+
+            .start-button {
+                padding: 15px 30px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 시작화면 -->
+        <div class="start-screen" id="startScreen">
+            <div class="start-logo">
+                <img src="다운로드.jpg" alt="START GAME">
+            </div>
+            
+            <div class="game-description">
+                <h3>🎯 게임 규칙</h3>
+                <ul class="rules-list">
+                    <li>📱 화면 위에서 떨어지는 벽돌의 영어 단어를 입력하세요.</li>
+                    <li>⚡ 정확한 단어를 입력하면 벽돌이 파괴됩니다.</li>
+                    <li>❤️ 벽돌이 바닥에 닿으면 목숨이 줄어듭니다.</li>
+                    <li>📈 점수가 올라갈수록 레벨이 상승하고 난이도가 높아집니다.</li>
+                </ul>
+            </div>
+
+            <div class="controls-info">
+                <h3>🎮 조작법</h3>
+                <div class="control-item">
+                    <span>단어 입력</span>
+                    <span class="control-key">키보드 입력</span>
+                </div>
+                <div class="control-item">
+                    <span>단어 확정</span>
+                    <span class="control-key">Enter</span>
+                </div>
+                <div class="control-item">
+                    <span>게임 일시정지</span>
+                    <span class="control-key">일시정지 버튼</span>
+                </div>
+            </div>
+
+            <button class="start-button" onclick="showGameScreen()">
+                🚀 게임 시작하기
+            </button>
+        </div>
+
+        <!-- 게임화면 -->
+        <div class="game-container" id="gameContainer">
+            <div class="game-header">
+                <h1 class="game-title">영어 단어 타이핑 벽돌 깨기</h1>
+                <div class="instructions">
+                    화면에 나타나는 영어 단어를 입력하여 벽돌을 파괴하세요!
+                </div>
+            </div>
+
+            <div class="game-stats">
+                <div>점수: <span id="score">0</span></div>
+                <div>레벨: <span id="level">1</span></div>
+                <div>생명: <span id="lives">3</span></div>
+            </div>
+
+            <div class="game-area" id="gameArea">
+                <div class="combo" id="combo" style="display: none;">COMBO x<span id="comboCount">0</span></div>
+                <div class="game-over" id="gameOver">
+                    <h2>게임 오버!</h2>
+                    <p>최종 점수: <span id="finalScore">0</span></p>
+                    <button class="btn" onclick="restartGame()">다시 시작</button>
+                    <button class="back-to-menu" onclick="showStartScreen()">메인 메뉴로</button>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="wordInput" class="word-input" placeholder="영어 단어를 입력하세요" disabled>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="startBtn" onclick="startGame()">게임 시작</button>
+                <button class="btn" id="pauseBtn" onclick="pauseGame()" disabled>일시정지</button>
+                <button class="btn" onclick="restartGame()">재시작</button>
+                <button class="back-to-menu" onclick="showStartScreen()">메인 메뉴</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TypingBrickBreaker {
+            constructor() {
+                this.gameArea = document.getElementById('gameArea');
+                this.wordInput = document.getElementById('wordInput');
+                this.scoreElement = document.getElementById('score');
+                this.levelElement = document.getElementById('level');
+                this.livesElement = document.getElementById('lives');
+                this.comboElement = document.getElementById('combo');
+                this.comboCountElement = document.getElementById('comboCount');
+                this.gameOverElement = document.getElementById('gameOver');
+                this.finalScoreElement = document.getElementById('finalScore');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+
+                this.score = 0;
+                this.level = 1;
+                this.lives = 3;
+                this.combo = 0;
+                this.bricks = [];
+                this.gameRunning = false;
+                this.gamePaused = false;
+                this.brickSpeed = 1;
+                this.spawnRate = 2000;
+
+                this.words = [
+                    'cat', 'dog', 'bird', 'fish', 'tree', 'book', 'car', 'house',
+                    'apple', 'water', 'fire', 'earth', 'music', 'dance', 'smile',
+                    'happy', 'friend', 'family', 'school', 'computer', 'phone',
+                    'beautiful', 'wonderful', 'amazing', 'fantastic', 'excellent',
+                    'adventure', 'journey', 'discovery', 'knowledge', 'wisdom',
+                    'creativity', 'imagination', 'inspiration', 'motivation'
+                ];
+
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.wordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.checkWord();
+                    }
+                });
+
+                this.wordInput.addEventListener('input', () => {
+                    this.highlightMatchingBricks();
+                });
+            }
+
+            startGame() {
+                this.gameRunning = true;
+                this.gamePaused = false;
+                this.score = 0;
+                this.level = 1;
+                this.lives = 3;
+                this.combo = 0;
+                this.bricks = [];
+                this.brickSpeed = 1;
+                this.spawnRate = 2000;
+
+                this.updateDisplay();
+                this.wordInput.disabled = false;
+                this.wordInput.focus();
+                this.startBtn.disabled = true;
+                this.pauseBtn.disabled = false;
+                this.gameOverElement.style.display = 'none';
+
+                this.clearGameArea();
+                this.gameLoop();
+                this.spawnBrick();
+            }
+
+            pauseGame() {
+                this.gamePaused = !this.gamePaused;
+                this.pauseBtn.textContent = this.gamePaused ? '계속하기' : '일시정지';
+                
+                if (!this.gamePaused) {
+                    this.gameLoop();
+                }
+            }
+
+            restartGame() {
+                this.gameRunning = false;
+                this.gamePaused = false;
+                this.clearGameArea();
+                this.startBtn.disabled = false;
+                this.pauseBtn.disabled = true;
+                this.wordInput.disabled = true;
+                this.wordInput.value = '';
+                this.gameOverElement.style.display = 'none';
+                this.comboElement.style.display = 'none';
+            }
+
+            spawnBrick() {
+                if (!this.gameRunning || this.gamePaused) return;
+
+                const brick = document.createElement('div');
+                brick.className = 'brick';
+                
+                const word = this.words[Math.floor(Math.random() * this.words.length)];
+                brick.textContent = word;
+                brick.dataset.word = word;
+                
+                const maxX = this.gameArea.clientWidth - 120;
+                brick.style.left = Math.random() * maxX + 'px';
+                brick.style.top = '0px';
+                
+                // 레벨에 따른 색상 변경
+                const colors = [
+                    'linear-gradient(45deg, #ff6b6b, #ee5a24)',
+                    'linear-gradient(45deg, #4ecdc4, #44a08d)',
+                    'linear-gradient(45deg, #a8e6cf, #7fcdcd)',
+                    'linear-gradient(45deg, #ffd93d, #ff6b6b)',
+                    'linear-gradient(45deg, #6c5ce7, #a29bfe)'
+                ];
+                brick.style.background = colors[Math.min(this.level - 1, colors.length - 1)];
+                
+                this.gameArea.appendChild(brick);
+                this.bricks.push({
+                    element: brick,
+                    word: word,
+                    y: 0
+                });
+
+                // 다음 벽돌 생성 스케줄
+                setTimeout(() => this.spawnBrick(), this.spawnRate);
+            }
+
+            gameLoop() {
+                if (!this.gameRunning || this.gamePaused) return;
+
+                this.moveBricks();
+                this.checkCollisions();
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            moveBricks() {
+                this.bricks.forEach((brick, index) => {
+                    brick.y += this.brickSpeed;
+                    brick.element.style.top = brick.y + 'px';
+
+                    // 화면 하단에 도달한 벽돌 처리
+                    if (brick.y > this.gameArea.clientHeight - 40) {
+                        this.removeBrick(index);
+                        this.loseLife();
+                    }
+                });
+            }
+
+            checkCollisions() {
+                // 이 게임에서는 타이핑으로만 벽돌을 제거하므로 물리적 충돌은 없음
+            }
+
+            checkWord() {
+                const inputWord = this.wordInput.value.trim().toLowerCase();
+                if (!inputWord) return;
+
+                let found = false;
+                this.bricks.forEach((brick, index) => {
+                    if (brick.word.toLowerCase() === inputWord) {
+                        this.destroyBrick(index);
+                        found = true;
+                        return;
+                    }
+                });
+
+                if (found) {
+                    this.combo++;
+                    this.updateCombo();
+                    this.addScore(10 * this.combo);
+                } else {
+                    this.combo = 0;
+                    this.updateCombo();
+                }
+
+                this.wordInput.value = '';
+                this.clearHighlights();
+            }
+
+            highlightMatchingBricks() {
+                const inputWord = this.wordInput.value.toLowerCase();
+                
+                this.bricks.forEach(brick => {
+                    if (brick.word.toLowerCase().startsWith(inputWord) && inputWord.length > 0) {
+                        brick.element.style.boxShadow = '0 0 20px #ffd700';
+                        brick.element.style.transform = 'scale(1.05)';
+                    } else {
+                        brick.element.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+                        brick.element.style.transform = 'scale(1)';
+                    }
+                });
+            }
+
+            clearHighlights() {
+                this.bricks.forEach(brick => {
+                    brick.element.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+                    brick.element.style.transform = 'scale(1)';
+                });
+            }
+
+            destroyBrick(index) {
+                const brick = this.bricks[index];
+                brick.element.classList.add('destroying');
+                
+                setTimeout(() => {
+                    this.removeBrick(index);
+                }, 500);
+            }
+
+            removeBrick(index) {
+                if (this.bricks[index]) {
+                    this.bricks[index].element.remove();
+                    this.bricks.splice(index, 1);
+                }
+            }
+
+            addScore(points) {
+                this.score += points;
+                this.updateDisplay();
+                this.checkLevelUp();
+            }
+
+            loseLife() {
+                this.lives--;
+                this.combo = 0;
+                this.updateCombo();
+                this.updateDisplay();
+
+                if (this.lives <= 0) {
+                    this.gameOver();
+                }
+            }
+
+            checkLevelUp() {
+                const newLevel = Math.floor(this.score / 100) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.brickSpeed += 0.5;
+                    this.spawnRate = Math.max(1000, this.spawnRate - 200);
+                    this.updateDisplay();
+                }
+            }
+
+            updateCombo() {
+                if (this.combo > 1) {
+                    this.comboElement.style.display = 'block';
+                    this.comboCountElement.textContent = this.combo;
+                } else {
+                    this.comboElement.style.display = 'none';
+                }
+            }
+
+            updateDisplay() {
+                this.scoreElement.textContent = this.score;
+                this.levelElement.textContent = this.level;
+                this.livesElement.textContent = this.lives;
+            }
+
+            gameOver() {
+                this.gameRunning = false;
+                this.wordInput.disabled = true;
+                this.startBtn.disabled = false;
+                this.pauseBtn.disabled = true;
+                this.finalScoreElement.textContent = this.score;
+                this.gameOverElement.style.display = 'flex';
+                this.comboElement.style.display = 'none';
+            }
+
+            clearGameArea() {
+                this.bricks.forEach(brick => brick.element.remove());
+                this.bricks = [];
+            }
+        }
+
+        // 게임 인스턴스 생성
+        const game = new TypingBrickBreaker();
+
+        // 화면 전환 함수들
+        function showStartScreen() {
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('gameContainer').style.display = 'none';
+            game.restartGame();
+        }
+
+        function showGameScreen() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+        }
+
+        // 전역 함수들
+        function startGame() {
+            game.startGame();
+        }
+
+        function pauseGame() {
+            game.pauseGame();
+        }
+
+        function restartGame() {
+            game.restartGame();
+        }
+    </script>
+</body>
+</html>
